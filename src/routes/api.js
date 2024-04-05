@@ -68,7 +68,7 @@ router.post('/login', async (req, res) => {
     if (user.key !== key) {
       return res.status(401).json({ message: "Invalid key." });
     }
-
+    
     // Generate a unique session token
     const sessionToken = jwt.sign({ _id: user._id, username: user.username }, process.env.JWT_SECRET_KEY, { expiresIn: '24h' });
 
@@ -80,7 +80,7 @@ router.post('/login', async (req, res) => {
 
     await user.save();
 
-    res.json({ sessionToken, sessionExpires });
+    res.json({ sessionToken, sessionExpires, message: "User is valid." });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
