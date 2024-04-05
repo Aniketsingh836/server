@@ -5,7 +5,8 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   username: {type :String , default : null},
   key: {type :String , default : null},
-  expires_in: {type :Date , default : null}
+  expires_in: {type :Date , default : null},
+  generated_at:{type :Date , default : null}
 });
 
 

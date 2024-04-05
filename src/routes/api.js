@@ -10,29 +10,27 @@ router.post('/generate', async (req, res) => {
   try {
     const { key, username, expiry } = req.body;
 
-    console.log({
-      key , 
-      expiry , 
-      username
-    })
     // Check if all parameters are provided
     if (!key || !username || !expiry) {
       return res.status(400).json({ message: "Please provide key, username, and expiry." });
     }
 
-    const currentDate = new Date();
+    const currentDate = new Date(); // Get the current date and time
+
     const expiryDate = new Date(currentDate.getTime() + Number(expiry) * 24 * 60 * 60 * 1000); // Adding expiry days in milliseconds
 
     // Create new user
-    const newUser = new User({ username, key, expires_in  : expiryDate});
+    const newUser = new User({ username, key, expires_in: expiryDate, generated_at: currentDate }); // Add generated_at field
     await newUser.save();
 
-    res.json({ username: newUser.username, key: newUser.key, expires_in: newUser.expiry });
+    res.json({ username: newUser.username, key: newUser.key, expires_in: newUser.expiry, generated_at: newUser.generated_at }); // Include generated_at in the response
   } catch (error) {
-    console.log({error})
+    console.log({ error })
     res.status(500).json({ message: error.message });
   }
 });
+
+
 
 router.post('/admin', async (req, res) => {
   try {
@@ -116,12 +114,14 @@ router.post('/admin-login', async (req, res) => {
 router.get('/user', async (req, res) => {
   try {
     // Find all users in the database
-    const users = await User.find({}, 'username key');
+    const users = await User.find({}, 'username key expires_in generated_at');
 
-    // Extract username and key from each user
+    // Extract username, key, and expires_in from each user
     const userData = users.map(user => ({
       username: user.username,
-      key: user.key
+      key: user.key,
+      expires_in: user.expires_in,
+      generated_at: user.generated_at // Include expires_in field
     }));
 
     res.json(userData);
@@ -129,6 +129,8 @@ router.get('/user', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+
 
 // Delete user endpoint
 router.delete('/user/:username', async (req, res) => {
