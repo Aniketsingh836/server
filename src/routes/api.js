@@ -50,6 +50,7 @@ router.post('/admin', async (req, res) => {
 });
 
 // Login API endpoint
+// Login API endpoint
 router.post('/login', async (req, res) => {
   try {
     const { username, key } = req.body;
@@ -58,7 +59,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: "Please provide username and key for login." });
     }
 
-    const user = await User.findOne({ username });
+    let user = await User.findOne({ username });
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials." });
@@ -68,7 +69,15 @@ router.post('/login', async (req, res) => {
     if (user.key !== key) {
       return res.status(401).json({ message: "Invalid key." });
     }
-    
+
+    // Invalidate existing session if any
+    if (user.sessionToken) {
+      // Remove existing session token
+      user.sessionToken = null;
+      user.sessionExpires = null;
+      await user.save();
+    }
+
     // Generate a unique session token
     const sessionToken = jwt.sign({ _id: user._id, username: user.username }, process.env.JWT_SECRET_KEY, { expiresIn: '24h' });
 
@@ -85,6 +94,9 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+
+
 
 router.get('/validate-session', async (req, res) => {
   try {
