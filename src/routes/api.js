@@ -74,6 +74,31 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/validate-session', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ valid: false, message: "Authorization header missing or invalid." });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    const user = await User.findOne({
+      sessionToken: token,
+      sessionExpires: { $gte: Date.now() } 
+    });
+
+    if (!user) {
+      return res.status(401).json({ valid: false });
+    }
+
+    res.json({ valid: true });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 
 // Retrieve all users endpoint
 router.get('/user', async (req, res) => {
