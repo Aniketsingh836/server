@@ -70,14 +70,16 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: "Invalid key." });
     }
 
-    // Invalidate existing session if any
-    if (user.sessionToken) {
-      // Remove existing session token
-      user.sessionToken = null;
-      user.sessionExpires = null;
-      await user.save();
+    // Check if a session already exists and is valid
+    if (user.sessionToken && user.sessionExpires > new Date()) {
+      // Here, you are effectively denying the login request because a valid session exists
+      return res.status(409).json({ message: "User is already logged in." }); // HTTP 409 Conflict might be appropriate here
     }
 
+    // Invalidate existing session if any (now redundant due to the check above, but kept for safety)
+    user.sessionToken = null;
+    user.sessionExpires = null;
+    
     // Generate a unique session token
     const sessionToken = jwt.sign({ _id: user._id, username: user.username }, process.env.JWT_SECRET_KEY, { expiresIn: '7D' });
 
@@ -94,6 +96,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 
 
 
