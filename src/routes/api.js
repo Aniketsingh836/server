@@ -52,8 +52,8 @@ router.post('/admin', async (req, res) => {
 // Login API endpoint
 // Login API endpoint
 router.post('/login', async (req, res) => {
-  try {
-    const { username, key } = req.body;
+  try { 
+    const { username, key  } = req.body;
 
     if (!username || !key) {
       return res.status(400).json({ message: "Please provide username and key for login." });
@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Generate a unique session token
-    const sessionToken = jwt.sign({ _id: user._id, username: user.username }, process.env.JWT_SECRET_KEY, { expiresIn: '24h' });
+    const sessionToken = jwt.sign({ _id: user._id, username: user.username }, process.env.JWT_SECRET_KEY, { expiresIn: '7D' });
 
     // Set the expiration time (24 hours in this example)
     const sessionExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
